@@ -4,10 +4,8 @@ const linkSection = document.getElementById("link-section");
 const gameLink = document.getElementById("game-link");
 const copyButton = document.getElementById("copy-btn");
 
-let gameInterval = null;
 let gameStarted = false;
-let currentlyPlaying = false; 
-let soundsQueue = []; // Ordre des sons à jouer
+let soundsQueue = []; 
 
 // Liste des sons
 const sounds = [
@@ -47,63 +45,53 @@ const sounds = [
     "https://www.myinstants.com/media/sounds/whatsapp-bass-boosted.mp3",
     "https://www.myinstants.com/media/sounds/swan-meme-without-aaaaaaa.mp3"
 ];
-
 // Fonction pour générer un lien unique
 function generateGameLink() {
     const gameData = {
-        sounds: soundsQueue, // Le tableau des sons à jouer dans l'ordre
-        timestamp: Date.now(), // Marque temporelle pour assurer l'unicité
+        sounds: soundsQueue, // L'ordre des sons
+        timestamp: Date.now(), 
     };
     const gameDataString = JSON.stringify(gameData);
     const gameLinkUrl = window.location.origin + window.location.pathname + "?data=" + encodeURIComponent(gameDataString);
-    gameLink.value = gameLinkUrl; // Afficher le lien dans le champ
-    linkSection.style.display = "block"; // Afficher la section du lien
+    gameLink.value = gameLinkUrl; 
+    linkSection.style.display = "block"; 
 }
 
 // Fonction pour démarrer le jeu
 function startGame() {
     gameStarted = true;
-    message.textContent = "Essayez de ne pas rire ! Les sons commencent...";
+    message.textContent = "Try not to laugh! Sounds will start soon...";
 
     // Créer un ordre aléatoire de sons
     soundsQueue = [...sounds];
-    soundsQueue = soundsQueue.sort(() => Math.random() - 0.5); // Mélanger l'ordre des sons
+    soundsQueue = soundsQueue.sort(() => Math.random() - 0.5); 
 
-    // Générer et afficher le lien
     generateGameLink();
 
     // Commencer à jouer les sons avec des intervalles aléatoires
-    gameInterval = setInterval(() => {
-        const randomDelay = Math.floor(Math.random() * (120000 - 10000) + 10000); // Entre 10s et 2min
+    setInterval(() => {
+        const randomDelay = Math.floor(Math.random() * (120000 - 10000) + 10000);
         setTimeout(playRandomSound, randomDelay);
-    }, 2000); // Vérifie toutes les 2 secondes si un son peut être joué
+    }, 2000); 
 }
 
 // Fonction pour jouer un son aléatoire
 function playRandomSound() {
-    if (currentlyPlaying) return;
+    const randomSound = soundsQueue.pop(); 
+    if (!randomSound) return; 
 
-    const randomSound = soundsQueue.pop(); // Récupérer le dernier son dans la liste
-    if (!randomSound) return; // Si plus de sons, on arrête
-
-    currentlyPlaying = true;
     const audio = new Audio(randomSound);
     audio.play();
-
-    // Quand le son se termine, permettre un nouveau son
-    audio.onended = () => {
-        currentlyPlaying = false;
-    };
 }
 
 // Fonction pour récupérer les données de jeu via l'URL
 function loadGameData() {
     const urlParams = new URLSearchParams(window.location.search);
-    const gameDataString = decodeURIComponent(urlParams.get('data'));
+    const gameDataString = decodeURIComponent(urlParams.get("data"));
     if (gameDataString) {
         const gameData = JSON.parse(gameDataString);
-        soundsQueue = gameData.sounds;
-        message.textContent = "Jeu synchronisé. Préparez-vous !";
+        soundsQueue = gameData.sounds || [];
+        generateGameLink(); 
     }
 }
 
@@ -111,19 +99,15 @@ function loadGameData() {
 copyButton.addEventListener("click", () => {
     gameLink.select();
     document.execCommand("copy");
+    alert("Link copied to clipboard!");
 });
 
 // Démarrer le jeu
 startButton.addEventListener("click", () => {
     if (!gameStarted) {
-        startButton.textContent = "Arrêter";
         startGame();
-    } else {
-        startButton.textContent = "Commencer";
-        clearInterval(gameInterval);
-        message.textContent = "Jeu arrêté. Cliquez sur 'Commencer' pour rejouer.";
     }
 });
 
-// Charger les données de jeu si le lien est partagé
-window.onload = loadGameData;
+// Charger les données de jeu si un lien est ouvert
+loadGameData();
