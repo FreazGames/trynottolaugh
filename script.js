@@ -45,10 +45,11 @@ const sounds = [
     "https://www.myinstants.com/media/sounds/whatsapp-bass-boosted.mp3",
     "https://www.myinstants.com/media/sounds/swan-meme-without-aaaaaaa.mp3"
 ];
+
 // Fonction pour générer un lien unique
 function generateGameLink() {
     const gameData = {
-        sounds: soundsQueue, // L'ordre des sons
+        sounds: soundsQueue, 
         timestamp: Date.now(), 
     };
     const gameDataString = JSON.stringify(gameData);
